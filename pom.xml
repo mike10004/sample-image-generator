@@ -25,12 +25,12 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>21.0</version>
+            <version>23.0</version>
         </dependency>
         <dependency>
-            <groupId>com.github.mike10004</groupId>
-            <artifactId>imnetio-helper</artifactId>
-            <version>6.0.0</version>
+            <groupId>org.devlib.schmidt</groupId>
+            <artifactId>imageinfo</artifactId>
+            <version>1.9</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -38,7 +38,6 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
 
 

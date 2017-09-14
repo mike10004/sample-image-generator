@@ -1,55 +1,46 @@
 package com.github.mike10004.sampleimggen;
 
-import com.github.mike10004.common.image.ImageInfos;
-import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
 import com.google.common.primitives.Ints;
 
-import java.awt.*;
-import java.awt.image.RenderedImage;
-import java.io.File;
+import java.awt.Dimension;
 import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
-public abstract class ImageFileDimensionFromSizeGenerator extends LargeImageFileGenerator {
+public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteArrayGenerator {
 
     private static final int MAX_NUM_TRIES = 10;
 
     private final Function<Integer, Dimension> fileSizeToImageSize;
 
-    public ImageFileDimensionFromSizeGenerator(Function<Integer, Dimension> fileSizeToImageSize, String imageIoWriteFormat) {
-        super(imageIoWriteFormat);
+    public DimensionedImageByteArrayGenerator(Function<Integer, Dimension> fileSizeToImageSize) {
+        super();
         this.fileSizeToImageSize = fileSizeToImageSize;
     }
 
-    public abstract RenderedImage createImage(Dimension imageSize) throws IOException;
+    public abstract byte[] generateImageBytesForSize(int minimumBytes, Dimension imageSize) throws IOException;
 
     @Override
-    protected ImageCreation createImage(int minimumSize) throws IOException {
+    protected byte[] generateImageBytes(int minimumSize) throws IOException {
         byte[] bytes = null;
         Dimension imageSize = fileSizeToImageSize.apply(minimumSize);
         int width = Math.max(1, imageSize.width), height = Math.max(1, imageSize.height);
         int numTries = 0;
-        RenderedImage image = null;
         while (bytes == null || bytes.length < minimumSize) {
-            if (numTries >= MAX_NUM_TRIES) {
+            if (numTries >= getMaxNumTries()) {
                 throw new IllegalStateException("tried too many times");
             }
             numTries++;
             checkState(LongMath.checkedMultiply(width, height) <= Integer.MAX_VALUE, "overflow on next width * height computation");
-            image = createImage(new Dimension(width, height));
-            bytes = toImageDataByteArray(image, minimumSize);
+            bytes = generateImageBytesForSize(minimumSize, new Dimension(width, height));
             width = IntMath.checkedMultiply(width, 2);
             height = IntMath.checkedMultiply(height, 2);
         }
-        return new ImageCreation(image, bytes);
+        return bytes;
     }
 
     protected static class Trendline {
@@ -85,25 +76,7 @@ public abstract class ImageFileDimensionFromSizeGenerator extends LargeImageFile
         };
     }
 
-    private static final AtomicLong sampleCounter = new AtomicLong();
-
-    public static void generateSamples(ImageFileDimensionFromSizeGenerator generator, String tag, File outputDir) throws Exception {
-        List<Integer> widths = Lists.newArrayList(16, 256, 512, 1024, 2048, 4096, 8192);
-        System.out.println();
-        System.out.println(tag);
-        for (int width : widths) {
-            long startTime = System.currentTimeMillis();
-            Dimension dim = new Dimension(width, width * 3 / 4);
-            RenderedImage image = generator.createImage(dim);
-            byte[] fileBytes = generator.toImageDataByteArray(image, width * 256);
-            ImageInfos.readImageSize(fileBytes); // check that it's a readable image
-            long duration = System.currentTimeMillis() - startTime;
-            String filename = "generated-sample-" + sampleCounter.incrementAndGet() + "." + tag;
-            File file = new File(outputDir, filename);
-            Files.createParentDirs(file);
-            Files.write(fileBytes, file);
-            System.out.format("%d\t%d\t%d\t%d\t%s%n", width, fileBytes.length, dim.height, duration, file.getAbsolutePath());
-        }
-
+    protected int getMaxNumTries() {
+        return MAX_NUM_TRIES;
     }
 }
