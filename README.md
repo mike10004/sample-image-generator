@@ -6,7 +6,13 @@
 
 Java library to generate sample images of arbitrary size.
 
-Need a 10MB jpeg to load test your image processing application? Try
+    <dependency>
+        <groupId>com.github.mike10004</groupId>
+        <artifactId>sample-image-generator</artifactId>
+        <version>[CHECK MAVEN CENTRAL BADGE ABOVE]</version>
+    </dependency>
+
+Need a 10MB jpeg to load-test your image processing application? 
 
     NoiseImageGenerator generator = NoiseImageGenerator.createGenerator(ImageFormat.JPEG);
     File imageFile = new File("largeimage.jpg");
@@ -15,11 +21,3 @@ Need a 10MB jpeg to load test your image processing application? Try
     }
 
 Only PNG and JPEG output formats are currently supported.
-
-## Maven
-
-    <dependency>
-        <groupId>com.github.mike10004</groupId>
-        <artifactId>sample-image-generator</artifactId>
-        <version>[CHECK MAVEN CENTRAL BADGE ABOVE]</version>
-    </dependency>
