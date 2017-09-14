@@ -1,4 +1,6 @@
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.mike10004/sample-image-generator.svg)](https://repo1.maven.org/maven2/com/github/mike10004/sample-image-generator/)
+[![Travis build status](https://img.shields.io/travis/mike10004/sample-image-generator.svg)](https://travis-ci.org/mike10004/sample-image-generator)
+[![AppVeyor build status](https://img.shields.io/appveyor/ci/mike10004/sample-image-generator.svg)](https://ci.appveyor.com/project/mike10004/sample-image-generator)
 
 # sample-image-generator
 
