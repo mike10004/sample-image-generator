@@ -1,10 +1,11 @@
 package com.github.mike10004.sampleimggen;
 
+import org.apache.commons.math3.fraction.Fraction;
+
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
-import java.util.function.Function;
 
 /**
  * Generator whose output is a fractal image.
@@ -12,11 +13,7 @@ import java.util.function.Function;
  */
 public class FractalImageGenerator extends RenderingImageGenerator {
 
-    protected FractalImageGenerator(ImageFormat outputFormat) {
-        this(makeFunctionFromTrendline(makeTrendline(outputFormat)), outputFormat);
-    }
-
-    protected FractalImageGenerator(Function<Integer, Dimension> fileSizeToImageSize, ImageFormat outputFormat) {
+    protected FractalImageGenerator(DimensionEstimator fileSizeToImageSize, ImageFormat outputFormat) {
         super(fileSizeToImageSize, outputFormat);
     }
 
@@ -32,19 +29,45 @@ public class FractalImageGenerator extends RenderingImageGenerator {
         return image;
     }
 
-    public static FractalImageGenerator createGenerator(ImageFormat format) {
-        return new FractalImageGenerator(format);
+    public static NoiseImageGenerator createGenerator(ImageFormat format) {
+        return new NoiseImageGenerator(EstimatorHolder.getEstimator(format), format); // TODO cache commonly-used generators
     }
 
-    protected static Trendline makeTrendline(ImageFormat format) {
-        switch (format) {
-            case PNG:
-                return new Trendline(5516.093, -4124366.521);
-            case JPEG:
-                return new Trendline(1135.6819, -858246.477);
-            default:
-                throw new IllegalArgumentException("only png and jpeg supported, not " + format);
+    private static class EstimatorHolder {
+        private final static DimensionEstimator JPEG_ESTIMATOR = LinearDimensionEstimator.fromSamples(new double[][]{
+                {632, 16},
+                {647, 32},
+                {732, 64},
+                {1536, 128},
+                {8071, 256},
+                {31022, 512},
+                {129742, 1024},
+                {521425, 2048},
+                {2148530, 4096},
+                {9487302, 8192},
+        }, new Fraction(4, 3));
+        private final static DimensionEstimator PNG_ESTIMATOR = LinearDimensionEstimator.fromSamples(new double[][]{
+                {174, 16},
+                {414, 32},
+                {1264, 64},
+                {4584, 128},
+                {29169, 256},
+                {142101, 512},
+                {617291, 1024},
+                {2586440, 2048},
+                {10863254, 4096},
+                {45942822, 8192},
+        }, new Fraction(4, 3));
+
+        public static DimensionEstimator getEstimator(ImageFormat outputFormat) {
+            switch (outputFormat) {
+                case PNG:
+                    return PNG_ESTIMATOR;
+                case JPEG:
+                    return JPEG_ESTIMATOR;
+                default:
+                    throw new IllegalArgumentException("only jpeg and png are supported, not format " + outputFormat);
+            }
         }
     }
-
 }

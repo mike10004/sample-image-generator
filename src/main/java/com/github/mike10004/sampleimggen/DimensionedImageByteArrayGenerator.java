@@ -3,23 +3,25 @@ package com.github.mike10004.sampleimggen;
 import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
 import com.google.common.primitives.Ints;
+import org.apache.commons.math3.fraction.Fraction;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import java.awt.Dimension;
 import java.io.IOException;
-import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteArrayGenerator {
 
     private static final int MAX_NUM_TRIES = 10;
 
-    private final Function<Integer, Dimension> fileSizeToImageSize;
+    private final DimensionEstimator dimensionEstimator;
 
-    public DimensionedImageByteArrayGenerator(Function<Integer, Dimension> fileSizeToImageSize) {
+    public DimensionedImageByteArrayGenerator(DimensionEstimator dimensionEstimator) {
         super();
-        this.fileSizeToImageSize = fileSizeToImageSize;
+        this.dimensionEstimator = checkNotNull(dimensionEstimator);
     }
 
     public abstract byte[] generateImageBytesForSize(int minimumBytes, Dimension imageSize) throws IOException;
@@ -27,7 +29,7 @@ public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteA
     @Override
     protected byte[] generateImageBytes(int minimumSize) throws IOException {
         byte[] bytes = null;
-        Dimension imageSize = fileSizeToImageSize.apply(minimumSize);
+        Dimension imageSize = dimensionEstimator.estimate(minimumSize);
         int width = Math.max(1, imageSize.width), height = Math.max(1, imageSize.height);
         int numTries = 0;
         while (bytes == null || bytes.length < minimumSize) {
@@ -43,39 +45,49 @@ public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteA
         return bytes;
     }
 
-    protected static class Trendline {
-        /**
-         * Slope.
-         */
-        public final double m;
-        /**
-         * X-intercept
-         */
-        public final double b;
-
-        public Trendline(double m, double b) {
-            this.m = m;
-            this.b = b;
+    protected interface DimensionEstimator  {
+        Dimension estimate(int numBytes, Dimension target);
+        default Dimension estimate(int numBytes) {
+            return estimate(numBytes, new Dimension());
         }
     }
 
-    protected static Function<Integer, Dimension> makeFunctionFromTrendline(Trendline t) {
-        // x is image width, image height is 3/4 of width
-        // mx + b = y
-        //     mx = y - b
-        //      x = (y - b) / m
-        checkArgument(t.m != 0, "slope must be nonzero");
-        return y -> {
-            int width = Ints.checkedCast(Math.round((y - t.b) / t.m));
-            int height = Ints.checkedCast(Math.round(Math.ceil(width * 3d / 4d)));
-            long imageBufferSize = LongMath.checkedMultiply(LongMath.checkedMultiply(width, height), 3); // 3-channel rgb
-            if (imageBufferSize > Integer.MAX_VALUE) {
-                throw new ArithmeticException("overflow; can't create image large enough for file size " + y);
-            }
-            return new Dimension(width, height);
-        };
+    protected static class LinearDimensionEstimator implements DimensionEstimator {
+
+        public final double slope, intercept;
+        public final Fraction aspectRatio;
+
+        public LinearDimensionEstimator(double slope, double intercept, Fraction aspectRatio) {
+            this.slope = slope;
+            this.intercept = intercept;
+            checkArgument(!Double.isNaN(slope) && Double.isFinite(slope), "slope must be well-defined: %s", slope);
+            checkArgument(!Double.isNaN(intercept) && Double.isFinite(intercept), "intercept must be well-defined: %s", intercept);
+            this.aspectRatio = aspectRatio;
+        }
+
+        public static LinearDimensionEstimator fromSamples(double[][] xyPairs, Fraction aspectRatio) {
+            SimpleRegression regression = new SimpleRegression(true);
+            regression.addData(xyPairs);
+            return new LinearDimensionEstimator(regression.getSlope(), regression.getIntercept(), aspectRatio);
+        }
+
+        @Override
+        public Dimension estimate(int numBytes, Dimension target) {
+            double width = Math.ceil(Math.max(1, slope * numBytes + intercept));
+            target.width = Ints.saturatedCast(Math.round(width));
+            target.height = Math.max(1, IntMath.checkedMultiply(target.width, aspectRatio.getDenominator()) / aspectRatio.getNumerator());
+            return target;
+        }
     }
 
+    /**
+     * Gets the maximum number of attempts to produce an image of adequate size.
+     * The dimension estimator estimates the width and height of an image to be produced,
+     * but if the resulting byte size is not above the minimum requested, then
+     * subsequent attempts will be made until the image is of adequate size, until this
+     * limit on attempts is reached.
+     * @return the maximum number of attempts
+     */
     protected int getMaxNumTries() {
         return MAX_NUM_TRIES;
     }

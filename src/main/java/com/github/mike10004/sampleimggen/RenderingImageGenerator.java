@@ -5,14 +5,13 @@ import java.awt.Dimension;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.function.Function;
 
 public abstract class RenderingImageGenerator extends DimensionedImageByteArrayGenerator {
 
     private final ImageFormat outputFormat;
 
-    public RenderingImageGenerator(Function<Integer, Dimension> fileSizeToImageSize, ImageFormat outputFormat) {
-        super(fileSizeToImageSize);
+    public RenderingImageGenerator(DimensionEstimator dimensionEstimator, ImageFormat outputFormat) {
+        super(dimensionEstimator);
         this.outputFormat = outputFormat;
     }
 

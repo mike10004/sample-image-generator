@@ -1,12 +1,13 @@
 package com.github.mike10004.sampleimggen;
 
+import org.apache.commons.math3.fraction.Fraction;
+
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
 import java.util.Random;
-import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -17,15 +18,11 @@ public class NoiseImageGenerator extends RenderingImageGenerator {
 
     private final Random random;
 
-    protected NoiseImageGenerator(ImageFormat outputFormat) {
-        this(makeFunctionFromTrendline(makeTrendline(outputFormat)), outputFormat);
-    }
-
-    protected NoiseImageGenerator(Function<Integer, Dimension> fileSizeToImageSize, ImageFormat outputFormat) {
+    protected NoiseImageGenerator(DimensionEstimator fileSizeToImageSize, ImageFormat outputFormat) {
         this(fileSizeToImageSize, outputFormat, new Random());
     }
 
-    protected NoiseImageGenerator(Function<Integer, Dimension> fileSizeToImageSize, ImageFormat outputFormat, Random random) {
+    protected NoiseImageGenerator(DimensionEstimator fileSizeToImageSize, ImageFormat outputFormat, Random random) {
         super(fileSizeToImageSize, outputFormat);
         this.random = checkNotNull(random);
     }
@@ -40,19 +37,48 @@ public class NoiseImageGenerator extends RenderingImageGenerator {
         return image;
     }
 
-    public static NoiseImageGenerator createGenerator(ImageFormat format) {
-        return new NoiseImageGenerator(format);
+    private static class EstimatorHolder {
+
+        public static DimensionEstimator getEstimator(ImageFormat outputFormat) {
+            switch (outputFormat) {
+                case JPEG:
+                    return JPEG_ESTIMATOR;
+                case PNG:
+                    return PNG_ESTIMATOR;
+                default:
+                    throw new IllegalArgumentException("output format not supported: " + outputFormat + "; must be jpeg or png");
+            }
+        }
+
+        private static final DimensionEstimator PNG_ESTIMATOR = LinearDimensionEstimator.fromSamples(new double[][]{
+                {656, 16},
+                {2396, 32},
+                {9332, 64},
+                {37050, 128},
+                {147809, 256},
+                {590672, 512},
+                {2361711, 1024},
+                {9445119, 2048},
+                {37777215, 4096},
+                {151102524, 8192},
+        }, new Fraction(4, 3));
+
+        public static final DimensionEstimator JPEG_ESTIMATOR = LinearDimensionEstimator.fromSamples(new double[][]{
+                {773, 16},
+                {1112, 32},
+                {2464, 64},
+                {8039, 128},
+                {30189, 256},
+                {118664, 512},
+                {472904, 1024},
+                {1889710, 2048},
+                {7555922, 4096},
+                {30228174, 8192},
+        }, new Fraction(4, 3));
     }
 
-    protected static Trendline makeTrendline(ImageFormat format) {
-        switch (format) {
-            case PNG:
-                return new Trendline(18193.1755198333, -13183559.9417411);
-            case JPEG:
-                return new Trendline(3639.2104356967, -2636879.32484107);
-            default:
-                throw new IllegalArgumentException("only png and jpeg supported, not " + format);
-        }
+    public static NoiseImageGenerator createGenerator(ImageFormat format) {
+        return new NoiseImageGenerator(EstimatorHolder.getEstimator(format), format); // TODO cache commonly-used generators
     }
 
 }
