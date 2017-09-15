@@ -28,10 +28,21 @@ public class GenerateSamples {
 
     private static final AtomicLong sampleCounter = new AtomicLong();
 
-    private Fraction aspectRatio = new Fraction(4, 3);
-    int minWidth = 16;
-    int numSamplesPerGenerator = 10;
-    private OutputFormat outputFormat = OutputFormat.JAVA_SYNTAX;
+    private final Fraction aspectRatio;
+    private final int minWidth;
+    private final int numSamplesPerGenerator;
+    private final OutputFormat outputFormat;
+
+    public GenerateSamples(Fraction aspectRatio, int minWidth, int numSamplesPerGenerator, OutputFormat outputFormat) {
+        this.aspectRatio = aspectRatio;
+        this.minWidth = minWidth;
+        this.numSamplesPerGenerator = numSamplesPerGenerator;
+        this.outputFormat = outputFormat;
+    }
+
+    public GenerateSamples() {
+        this(new Fraction(4, 3), 16, 10,OutputFormat.JAVA_SYNTAX);
+    }
 
     private enum OutputFormat {
         HUMAN, JAVA_SYNTAX;
@@ -53,7 +64,9 @@ public class GenerateSamples {
                 FractalImageGenerator.createGenerator(ImageFormat.JPEG),
                 FractalImageGenerator.createGenerator(ImageFormat.PNG),
                 NoiseImageGenerator.createGenerator(ImageFormat.PNG),
-                NoiseImageGenerator.createGenerator(ImageFormat.JPEG)
+                NoiseImageGenerator.createGenerator(ImageFormat.JPEG),
+                ScalingImageGenerator.createGenerator(ImageFormat.JPEG),
+                ScalingImageGenerator.createGenerator(ImageFormat.PNG)
         );
         File outputDir = java.nio.file.Files.createTempDirectory("generated-samples").toFile();
         try {
@@ -63,6 +76,7 @@ public class GenerateSamples {
             }
         } finally {
             FileUtils.deleteDirectory(outputDir);
+            System.out.format("%s deleted%n", outputDir);
         }
     }
 
@@ -89,7 +103,7 @@ public class GenerateSamples {
         }
         double slope = regression.getSlope();
         double intercept = regression.getIntercept();
-        System.out.format("%s trendline (%d:%d aspect): width = %f * x + %f%n", tag, aspectW, aspectH, slope, intercept);
+        System.out.format("%s trendline (%d:%d aspect): width = %f * numBytes + %f%n", tag, aspectW, aspectH, slope, intercept);
     }
 
     public static void assertImageIsReadable(ByteSource byteSource) throws IOException {

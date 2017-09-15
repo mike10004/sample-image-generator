@@ -59,6 +59,7 @@ public class FractalImageGenerator extends RenderingImageGenerator {
                 {45942822, 8192},
         }, new Fraction(4, 3));
 
+        @SuppressWarnings("Duplicates")
         public static DimensionEstimator getEstimator(ImageFormat outputFormat) {
             switch (outputFormat) {
                 case PNG:

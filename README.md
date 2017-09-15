@@ -23,3 +23,11 @@ Only PNG and JPEG output formats are currently supported.
         <artifactId>sample-image-generator</artifactId>
         <version>[CHECK MAVEN CENTRAL BADGE ABOVE]</version>
     </dependency>
+
+## Credits
+
+Seed image for the default scaling image generator is from 
+[publicdomainpictures.net][pdn-image-url]. The author is Jean Beaufort and 
+it is distributed under the CC0 license.
+
+[pdn-image-url]: http://www.publicdomainpictures.net/view-image.php?image=210256&picture=bison 

@@ -37,6 +37,12 @@ public class NoiseImageGenerator extends RenderingImageGenerator {
         return image;
     }
 
+    /*
+     * Linear regression on the required dimensions for noise images, with respect
+     * to byte size, is (in theory) correct for PNG, because the randomness should
+     * make PNG compression extremely inefficient. For JPEG, another type of model
+     * may be more appropriate.
+     */
     private static class EstimatorHolder {
 
         public static DimensionEstimator getEstimator(ImageFormat outputFormat) {

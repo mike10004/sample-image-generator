@@ -46,9 +46,18 @@ public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteA
     }
 
     protected interface DimensionEstimator  {
-        Dimension estimate(int numBytes, Dimension target);
+        void estimate(int numBytes, Dimension target);
         default Dimension estimate(int numBytes) {
-            return estimate(numBytes, new Dimension());
+            Dimension d = new Dimension();
+            estimate(numBytes, d);
+            return d;
+        }
+
+        static DimensionEstimator constant(int width, int height) {
+            return (numBytes, target) -> {
+                target.width = width;
+                target.height = height;
+            };
         }
     }
 
@@ -72,11 +81,10 @@ public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteA
         }
 
         @Override
-        public Dimension estimate(int numBytes, Dimension target) {
+        public void estimate(int numBytes, Dimension target) {
             double width = Math.ceil(Math.max(1, slope * numBytes + intercept));
             target.width = Ints.saturatedCast(Math.round(width));
             target.height = Math.max(1, IntMath.checkedMultiply(target.width, aspectRatio.getDenominator()) / aspectRatio.getNumerator());
-            return target;
         }
     }
 
