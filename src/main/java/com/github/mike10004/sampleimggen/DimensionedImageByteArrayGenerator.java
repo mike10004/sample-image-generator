@@ -1,17 +1,14 @@
 package com.github.mike10004.sampleimggen;
 
-import com.google.common.math.IntMath;
-import com.google.common.math.LongMath;
-import com.google.common.primitives.Ints;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.Objects;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.github.mike10004.sampleimggen.Guava.Preconditions.checkArgument;
+import static com.github.mike10004.sampleimggen.Guava.Preconditions.checkState;
 
 public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteArrayGenerator {
 
@@ -21,7 +18,7 @@ public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteA
 
     public DimensionedImageByteArrayGenerator(DimensionEstimator dimensionEstimator) {
         super();
-        this.dimensionEstimator = checkNotNull(dimensionEstimator);
+        this.dimensionEstimator = Objects.requireNonNull(dimensionEstimator);
     }
 
     public abstract byte[] generateImageBytesForSize(int minimumBytes, Dimension imageSize) throws IOException;
@@ -37,10 +34,10 @@ public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteA
                 throw new IllegalStateException("tried too many times");
             }
             numTries++;
-            checkState(LongMath.checkedMultiply(width, height) <= Integer.MAX_VALUE, "overflow on next width * height computation");
+            checkState(Guava.LongMath.checkedMultiply(width, height) <= Integer.MAX_VALUE, "overflow on next width * height computation");
             bytes = generateImageBytesForSize(minimumSize, new Dimension(width, height));
-            width = IntMath.checkedMultiply(width, 2);
-            height = IntMath.checkedMultiply(height, 2);
+            width = Guava.IntMath.checkedMultiply(width, 2);
+            height = Guava.IntMath.checkedMultiply(height, 2);
         }
         return bytes;
     }
@@ -53,6 +50,7 @@ public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteA
             return d;
         }
 
+        @SuppressWarnings("unused")
         static DimensionEstimator constant(int width, int height) {
             return (numBytes, target) -> {
                 target.width = width;
@@ -83,8 +81,8 @@ public abstract class DimensionedImageByteArrayGenerator extends LargeImageByteA
         @Override
         public void estimate(int numBytes, Dimension target) {
             double width = Math.ceil(Math.max(1, slope * numBytes + intercept));
-            target.width = Ints.saturatedCast(Math.round(width));
-            target.height = Math.max(1, IntMath.checkedMultiply(target.width, aspectRatio.getDenominator()) / aspectRatio.getNumerator());
+            target.width = Guava.Ints.saturatedCast(Math.round(width));
+            target.height = Math.max(1, Guava.IntMath.checkedMultiply(target.width, aspectRatio.getDenominator()) / aspectRatio.getNumerator());
         }
     }
 

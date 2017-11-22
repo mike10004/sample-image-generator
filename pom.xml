@@ -6,7 +6,7 @@
     <name>sample-image-generator</name>
     <groupId>com.github.mike10004</groupId>
     <artifactId>sample-image-generator</artifactId>
-    <version>0.2</version>
+    <version>0.3</version>
     <description>Library that generates sample images of arbitrary size</description>
     <url>https://github.com/mike10004/sample-image-generator</url>
     <inceptionYear>2017</inceptionYear>
@@ -138,6 +138,7 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>23.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.devlib.schmidt</groupId>

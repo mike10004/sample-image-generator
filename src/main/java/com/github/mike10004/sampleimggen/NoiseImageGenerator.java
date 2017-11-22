@@ -7,9 +7,8 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Random;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Generator whose output contains random noise.
@@ -24,7 +23,7 @@ public class NoiseImageGenerator extends RenderingImageGenerator {
 
     protected NoiseImageGenerator(DimensionEstimator fileSizeToImageSize, ImageFormat outputFormat, Random random) {
         super(fileSizeToImageSize, outputFormat);
-        this.random = checkNotNull(random);
+        this.random = Objects.requireNonNull(random);
     }
 
     @Override
