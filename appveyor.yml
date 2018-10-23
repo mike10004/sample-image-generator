@@ -1,4 +1,4 @@
-version: 0.1-b{build}
+version: "{build}"
 build_script:
 - cmd: >-
     set MAVEN_VERSION=3.5.0
