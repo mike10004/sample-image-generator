@@ -12,6 +12,8 @@ Java library to generate sample images of arbitrary size.
         <version>[CHECK MAVEN CENTRAL BADGE ABOVE]</version>
     </dependency>
 
+## Usage
+
 Need a 10MB jpeg to load-test your image processing application? 
 
     NoiseImageGenerator generator = NoiseImageGenerator.createGenerator(ImageFormat.JPEG);
@@ -21,6 +23,12 @@ Need a 10MB jpeg to load-test your image processing application?
     }
 
 Only PNG and JPEG output formats are currently supported.
+
+## Changelog
+
+### 0.4
+
+* fix jpeg write error in Java 11
 
 ## Credits
 

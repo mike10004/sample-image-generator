@@ -10,12 +10,13 @@ import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ScalingImageGenerator extends RenderingImageGenerator {
-
-    private static final BufferedImage ONE_BY_ONE_IMAGE = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 
     private final BufferedImage seedImage;
 
@@ -31,7 +32,7 @@ public class ScalingImageGenerator extends RenderingImageGenerator {
     @Override
     protected RenderedImage render(int minimumSize, Dimension imageSize) throws IOException {
         if (imageSize.width == 1 && imageSize.height == 1) {
-            return ONE_BY_ONE_IMAGE;
+            return new BufferedImage(1, 1, getOutputFormat().getCompatibleBufferedImageType());
         }
         double sx = divide(imageSize.width, seedImage.getWidth());
         double sy = divide(imageSize.height, seedImage.getHeight());

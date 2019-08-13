@@ -28,7 +28,7 @@ public class NoiseImageGenerator extends RenderingImageGenerator {
 
     @Override
     protected RenderedImage render(int minimumSize, Dimension imageSize) throws IOException {
-        BufferedImage image = new BufferedImage(imageSize.width, imageSize.height, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(imageSize.width, imageSize.height, getOutputFormat().getCompatibleBufferedImageType());
         int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
         for (int i = 0; i < pixels.length; i++) {
             pixels[i] = random.nextInt();

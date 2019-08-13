@@ -20,7 +20,7 @@ public class FractalImageGenerator extends RenderingImageGenerator {
     @Override
     protected RenderedImage render(int minimumSize, Dimension imageSize) throws IOException {
         int width = imageSize.width, height= imageSize.height;
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(width, height, getOutputFormat().getCompatibleBufferedImageType());
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 image.setRGB(x, y, (x-y)*(x+y)&(x|y));
@@ -29,8 +29,8 @@ public class FractalImageGenerator extends RenderingImageGenerator {
         return image;
     }
 
-    public static NoiseImageGenerator createGenerator(ImageFormat format) {
-        return new NoiseImageGenerator(EstimatorHolder.getEstimator(format), format); // TODO cache commonly-used generators
+    public static FractalImageGenerator createGenerator(ImageFormat format) {
+        return new FractalImageGenerator(EstimatorHolder.getEstimator(format), format); // TODO cache commonly-used generators
     }
 
     private static class EstimatorHolder {
